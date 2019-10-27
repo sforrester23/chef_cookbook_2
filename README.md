@@ -63,7 +63,7 @@ This section under "provisioner:" is where we accept the license and direct it t
 
 where \<path_to_recipe_file\> specifies the path to our recipe file. In initial set-up, this will look like: \<cookbook_name>/Policyfile.rb.
 
-N.B. _You may not have to define your path to Policy file, as it should be able to see where it is on default set-up._
+N.B. _You may not have to define your path to Policyfile, as it should be able to see where it is on default set-up._
 
 Next, to the platforms section. This is where we define which operating system we'd like to run on our kitchen virtual machine.
 
@@ -78,4 +78,41 @@ It's important to note the indentation throughout. While ruby does not rely on c
 
 We can move past the verifier and suites sections of this file, they are more advanced settings. The suites section specifies which integration tests to carry out, but we won't change this as we will simply be editing the file that it is directed to already with our own tests.
 
- 
+### :dango: Recipes :oden:
+As previously mentioned, recipes are carried out in the kitchen to provision processes automatically, usually to get your machine to install certain packages for use later.
+
+Open up the recipe file in \<cookbook_name\>/recipes/default.rb.
+Here we can write code in ruby/chef language to install and perform actions on packages automatically upon initiation of our machine. In theory, we can make more than one recipe and tell our kitchen to carry out multiple recipes at once, but in this instance we shall just edit the default recipe.
+
+Here's an example of code we can input to provision the installation of the package "nginx":
+
+    package 'nginx'
+
+Yes, it is that simple. Chef's special ruby hybrid language takes care of the hard stuff for us.
+
+Here is some futher code to provision the enablement and start of the nginx service. This looks a little bit more ruby-esque.
+
+    service 'nginx' do
+      action :enable
+    end
+
+    service 'nginx' do
+      action :start
+    end
+
+This is perhaps a bit more specific to the package of nginx and what it requires to start, but it can be extended to other packages you'd like to provision the installation of.
+
+### :egg: Policyfile.rb :stew:
+We mentioned the Policyfile earlier, this section should explain a bit better what it is for. Go ahead and open it up have a look.
+
+Chef has been pretty helpful here, as there are comments to explain what each line does - it even gives you a weblink to go have more of a look yourself. So we'll be a bit brief about it.
+
+The name is pretty self explanatory, give it a good name so you (and others) know what it's for.
+
+The default_source line is a reference for where to get external cookbooks for. This is beyond the scope of what we're doing here, as it's a bit more advanced.
+
+The run_list section is probably the most important and relevant here right now. It tells your kitchen which recipes to run, and in what order. If we had made multiple recipes here, and I'm sure you will at some point, this is where we tell it which ones to run, and in what sequence. Recipes should ideally be split up to separate the installation and manipulation of different packages.
+
+The final section, by default, defines the location of the current cookbooks. This is again beyond the scope of this walkthrough, but if you wished to integrate different external cookbooks, this might be a good place to look.
+
+### :bread: default_spec :rice:
