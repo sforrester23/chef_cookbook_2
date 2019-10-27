@@ -15,7 +15,7 @@ This creates a new folder in the directory you executed the command in, with wha
 
 Let's enter the folder, using:
 
-    cd \<cookbook_name\>
+    cd <cookbook_name>
 
 and hit a **cheeky ls** to have a look at what we've just made. :spaghetti:
 
@@ -57,10 +57,10 @@ In chef cookbooks, our recipes are our provisioning files. So, we need to direct
 
 This section under ```provisioner:``` is where we accept the license and direct it to our recipes for provisioning. Thus, it should look a little bit like:
 ```ruby
-    provisioner:
-      name: chef_zero
-      chef_license: accept
-      policyfile_path: path_to_recipe_file
+provisioner:
+  name: chef_zero
+  chef_license: accept
+  policyfile_path: path_to_recipe_file
 ```
 
 where ```path_to_recipe_file``` specifies the path to our recipe file. In initial set-up, this will look like: \<cookbook_name>/Policyfile.rb.
@@ -72,10 +72,10 @@ Next, to the platforms section. This is where we define which operating system w
 Using Ubuntu 16.04 as an example, I have included an excerpt of code that should appear in this file to specify which operating system. You will need to change this to your own specifications and OS choice, as well as knowing what command is used for this in vagrant (i.e. where it states the box as ubuntu/xenial64):
 
 ```ruby
-    platforms:
-      - name: ubuntu-16.04
-        driver:
-          box: ubuntu/xenial64
+platforms:
+  - name: ubuntu-16.04
+    driver:
+      box: ubuntu/xenial64
 ```
 
 It's important to note the indentation throughout. While ruby does not rely on correct indentation to work, like python for instance, it is always helpful to maintain the indentation as it can be useful when identifying syntax errors.
@@ -90,20 +90,20 @@ Here we can write code in ruby/chef language to install and perform actions on p
 
 Here's an example of code we can input to provision the installation of the package "nginx":
 ```ruby
-    package 'nginx'
+package 'nginx'
 ```
 
 Yes, it is that simple. Chef's special ruby hybrid language takes care of the hard stuff for us.
 
 Here is some further code to provision the enablement and start of the nginx service. This looks a little bit more ruby-esque.
 ```ruby
-    service 'nginx' do
-      action :enable
-    end
+service 'nginx' do
+  action :enable
+end
 
-    service 'nginx' do
-      action :start
-    end
+service 'nginx' do
+  action :start
+end
 ```
 
 This is perhaps a bit more specific to the package of nginx and what it requires to start, but it can be extended to other packages you'd like to provision the installation of.
