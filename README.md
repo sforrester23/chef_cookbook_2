@@ -55,11 +55,12 @@ We need to tell our system to accept the chef license, as well as which files to
 In chef cookbooks, our recipes are our provisioning files. So, we need to direct our kitchen to these recipe files so that it can carry them out and set-up the system to our specifications. :fried_shrimp:
 
 This section under "provisioner:" is where we accept the license and direct it to our recipes for provisioning. Thus, it should look a little bit like:
-
+```ruby
     provisioner:
       name: chef_zero
       chef_license: accept
-      policyfile_path: <path_to_recipe_file>
+      policyfile_path: path_to_recipe_file
+```
 
 where \<path_to_recipe_file\> specifies the path to our recipe file. In initial set-up, this will look like: \<cookbook_name>/Policyfile.rb.
 
@@ -69,10 +70,12 @@ Next, to the platforms section. This is where we define which operating system w
 
 Using Ubuntu 16.04 as an example, I have included an excerpt of code that should appear in this file to specify which operating system. You will need to change this to your own specifications and OS choice, as well as knowing what command is used for this in vagrant (i.e. where it states the box as ubuntu/xenial64):
 
+```ruby
     platforms:
       - name: ubuntu-16.04
         driver:
           box: ubuntu/xenial64
+```
 
 It's important to note the indentation throughout. While ruby does not rely on correct indentation to work, like python for instance, it is always helpful to maintain the indentation as it can be useful when identifying syntax errors.
 
@@ -85,13 +88,14 @@ Open up the recipe file in \<cookbook_name\>/recipes/default.rb.
 Here we can write code in ruby/chef language to install and perform actions on packages automatically upon initiation of our machine. In theory, we can make more than one recipe and tell our kitchen to carry out multiple recipes at once, but in this instance we shall just edit the default recipe.
 
 Here's an example of code we can input to provision the installation of the package "nginx":
-
+```ruby
     package 'nginx'
+```
 
 Yes, it is that simple. Chef's special ruby hybrid language takes care of the hard stuff for us.
 
 Here is some futher code to provision the enablement and start of the nginx service. This looks a little bit more ruby-esque.
-
+```ruby
     service 'nginx' do
       action :enable
     end
@@ -99,6 +103,7 @@ Here is some futher code to provision the enablement and start of the nginx serv
     service 'nginx' do
       action :start
     end
+```
 
 This is perhaps a bit more specific to the package of nginx and what it requires to start, but it can be extended to other packages you'd like to provision the installation of.
 
@@ -115,4 +120,102 @@ The run_list section is probably the most important and relevant here right now.
 
 The final section, by default, defines the location of the current cookbooks. This is again beyond the scope of this walkthrough, but if you wished to integrate different external cookbooks, this might be a good place to look.
 
-### :bread: default_spec :rice:
+## Create Kitchen and run our Recipes
+We're now ready to execute commands to create our kitchen (a virtual machine), and execute those recipes for our provisioning. In your command line:
+
+Creating the kitchen:
+
+    kitchen create
+
+Run the recipes (provisioning):
+
+    kitchen converge
+
+This will result in making our virtual machine to the specifications we designed upon set up of those three files we've just discussed.
+
+After this, we can move on to some testing.
+
+### :bread: default_spec.rb :rice:
+
+The default_spec.rb file, stored in spec/unit/recipes (important to distinguish this between the recipes directory with default.rb in it) is where we can run some unit tests in our kitchen.
+
+Unit tests are for testing the code in our system, as opposed to integration tests that test the capability of the environment we've made. More on that later.  
+
+Based off of the recipe I described earlier, we're going to test the recipes we've written. So we're going to test that:
+1. We are using Ubuntu 16.04
+2. We have installed, enabled and started nginx
+
+This is going to use chef's ruby hybrid language that is surprisingly human readable. The following is what they should look like:
+```ruby
+require 'spec_helper'
+
+describe 'node::default' do
+  context 'When all attributes are default, on Ubuntu 16.04' do
+    # for a complete list of available platforms and versions see:
+    # https://github.com/chefspec/fauxhai/blob/master/PLATFORMS.md
+    platform 'ubuntu', '16.04'
+
+    it 'converges successfully' do
+      expect { chef_run }.to_not raise_error
+    end
+
+    it 'Should install nginx' do
+      expect(chef_run).to install_package 'nginx'
+    end
+
+    it 'Enables the nginx service' do
+      expect(chef_run).to enable_service 'nginx'
+    end
+
+    it 'Starts the nginx service' do
+      expect(chef_run).to start_service 'nginx'
+    end
+
+  end
+end
+```
+
+This looks a bit daunting if you don't know ruby, but it's not that bad.
+
+require 'spec_helper' refers to another file in the above folder that is used to assist these tests.
+
+The first test can be altered to change first the output text for a failure (next to 'context'), and the actual test needs to be changed on the 'platform' line to test the OS you actually installed.
+
+The next lines follow a similar syntax in the sense that the first line merely states a string that is used to describe the test, it doesn't come into play in the actual test. Theoretically we could write anything in there, but it's useful to make it relevant as that is what will come up if the code fails the tests, so you know what didn't pass.
+
+The tests use a ruby loop to occur, and you should be able to see how each line uses its built in phrases and syntax to test the code. This can be altered to write tests for other packages and recipes.
+
+The 'converges successfully' line is for testing the kitchen converge command when it is used. Don't worry too much about knowing how everything works, as all that's needed to be done is edit existing syntax to test other recipes.
+
+### :rice_ball: spec_helper :rice_cracker:
+
+Your spec_helper file will contain something like this:
+
+```ruby
+require 'chefspec'
+require 'chefspec/policyfile'
+```
+It is a list of requirements to run the tests in default_spec.rb. We can customise it by adding:
+
+```ruby
+at_exit { ChefSpec::Coverage.report! }
+```
+to produce a simple report on tests and their coverage at the end of a test.
+
+We are now ready to run some tests!
+
+So, with your kitchen created and converged (see earlier), in our command line, we can run:
+
+    chef exec rspec spec
+
+to run ruby's special rake spec tests. It knows which folder to run it on because of the "spec" component. It should look something like this on output:
+
+![rake_spec_output](rspecoutput.png)
+
+This will display how well your tests have done.
+
+### :sushi: default_test.rb :bento:
+In this file, we can specify integration tests for how our machine is operating.
+We can test if nginx is running, and whether it is listening on port 80. This is a bit beyond the scope of this course so we'll leave it here for now.
+
+#### :icecream: Thank you for listening to my ted talk. :doughnut:
