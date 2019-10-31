@@ -16,5 +16,12 @@ chef_version '>= 14.0'
 # The `source_url` points to the development repository for this cookbook.  A
 # `View Source` link will be displayed on this cookbook's page when uploaded to
 # a Supermarket.
-#
+
+# get the nodejs recipe for version 6
+# depends 'nodejs', '~> 6.0.0'
+# depends 'apt'
+
+
+
+
 # source_url 'https://github.com/<insert_org_here>/node'
